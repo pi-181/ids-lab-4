@@ -1,4 +1,4 @@
-package com.demkom58.ids_lab_4.tools;
+package com.demkom58.ids_lab_4.gui;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,11 +8,6 @@ public class ThreadCountInput extends JPanel {
     private final JTextField textField;
     private int numThreads = -1;
 
-    /**
-     * Constructor for panel used to get the number of processors
-     *
-     * @param currNumThreads - the current number of threads
-     */
     public ThreadCountInput(int currNumThreads) {
         setLayout(new FlowLayout());
         this.textField = new JTextField(4);
@@ -21,13 +16,6 @@ public class ThreadCountInput extends JPanel {
         add(this.textField);
     }
 
-    /**
-     * Create a dialog box to take in the desired number of threads
-     *
-     * @param r - the number of rows
-     * @param c - the number of columns
-     * @return -1 if invalid user input is entered and 0 if the value is a good one
-     */
     public int getUserInput(int r, int c) {
         String[] options = {"Submit", "Cancel"};
         int optionType = JOptionPane.DEFAULT_OPTION;
@@ -52,9 +40,6 @@ public class ThreadCountInput extends JPanel {
             } else if (r < 3 || c < 3) {
                 JOptionPane.showMessageDialog(null, "Please load in a grid first");
                 return -1;
-            } else if (cnt > 100) {
-                JOptionPane.showMessageDialog(null, "That is an unreasonable number of threads");
-                return -1;
             } else if (cnt % 2 == 1) {
                 JOptionPane.showMessageDialog(null, "Enter an even number of threads please");
                 return -1;
@@ -62,7 +47,9 @@ public class ThreadCountInput extends JPanel {
                 JOptionPane.showMessageDialog(null, "There is no point of having more threads than there are cells");
                 return -1;
             }
+
             this.numThreads = cnt;
+
             return 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -71,11 +58,6 @@ public class ThreadCountInput extends JPanel {
         }
     }
 
-    /**
-     * Get the number of threads
-     *
-     * @return the number of threads the user entered, or -1 if no value
-     */
     public int numThreads() {
         return this.numThreads;
     }

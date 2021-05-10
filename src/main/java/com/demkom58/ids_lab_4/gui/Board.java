@@ -1,6 +1,6 @@
-package com.demkom58.ids_lab_4;
+package com.demkom58.ids_lab_4.gui;
 
-import com.demkom58.ids_lab_4.gui.GUI;
+import com.demkom58.ids_lab_4.GameOfLife;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,37 +12,28 @@ public class Board extends JPanel {
     private GameOfLife game;
     private final GUI gui;
 
-    /**
-     * Contructor for the Board class
-     *
-     * @param gui - a reference to the Game of Life gui
-     */
     public Board(GUI gui) {
         this.gui = gui;
     }
 
-    /**
-     * Attach a GameOfLife reference to the board for repainting
-     *
-     * @param game - the GameOfLife reference to add to the board
-     */
     public void addGame(GameOfLife game) {
         this.game = game;
         this.rows = game.numRows;
         this.cols = game.numCols;
     }
 
-    /**
-     * Paint the JPanel to show the location of cells
-     *
-     * @param g - the graphics object used for painting
-     */
     private void paintBoard(Graphics g) {
         Dimension d = this.getSize();
         int height = (int) d.getHeight();
         int width = (int) d.getWidth();
         if (rows < 3 || cols < 3)
             return;
+
+        if (gui.disableMapBox.getState()) {
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, width, height);
+            return;
+        }
 
         if (rows * cols <= height * width) { // Less cells than pixels
             paintSmallerBoard(g, height, width);
@@ -51,17 +42,7 @@ public class Board extends JPanel {
         }
     }
 
-    /**
-     * This method calculates the sizes of the cells on the board
-     * when the amount of cells is less than the amount of pixels
-     *
-     * @param g - the Graphics object used for painting
-     * @param h - the height of the board
-     * @param w - the width of the board
-     */
     private void paintSmallerBoard(Graphics g, int h, int w) {
-
-        System.out.println("painting smaller board");
         super.paintComponent(g);
         int deltaR = h / rows + 1;
         int deltaC = w / cols + 1;
@@ -82,13 +63,6 @@ public class Board extends JPanel {
         }
     }
 
-    /**
-     * This method calculates and packs cells into each pixel for displaying
-     *
-     * @param g - the Graphics object for painting
-     * @param h - the height of the board
-     * @param w - the width of the board for painting
-     */
     private void paintLargerBoard(Graphics g, int h, int w) {
         if (gui.frame.getExtendedState() != Frame.MAXIMIZED_BOTH) {
             System.err.println("Waiting for screen to be maximized to print...");
@@ -111,12 +85,9 @@ public class Board extends JPanel {
                     extraR = true;
                     if (computeRect(x, y, deltaR + 1, deltaC + 1)) { // Compute the larger subgrid
                         g.setColor(gui.currentColor);
-                        g.fillRect(j, i, 1, 1);
-                    } else {
-                        g.setColor(Color.WHITE);
-                        g.fillRect(j, i, 1, 1);
-                    }
+                    } else g.setColor(Color.WHITE);
 
+                    g.fillRect(j, i, 1, 1);
                     y += deltaC + 1;
                     remR--;
                     remC--;
@@ -124,9 +95,7 @@ public class Board extends JPanel {
                     extraR = true;
                     if (computeRect(x, y, deltaR + 1, deltaC)) { // Compute the larger subgrid
                         g.setColor(gui.currentColor);
-                    } else {
-                        g.setColor(Color.WHITE);
-                    }
+                    } else g.setColor(Color.WHITE);
 
                     g.fillRect(j, i, 1, 1);
                     y += deltaC;
@@ -135,46 +104,27 @@ public class Board extends JPanel {
                     extraR = false;
                     if (computeRect(x, y, deltaR, deltaC + 1)) { // Compute the larger subgrid
                         g.setColor(gui.currentColor);
-                        g.fillRect(j, i, 1, 1);
-                    } else {
-                        g.setColor(Color.WHITE);
-                        g.fillRect(j, i, 1, 1);
-                    }
+                    } else g.setColor(Color.WHITE);
 
+                    g.fillRect(j, i, 1, 1);
                     y += deltaC + 1;
                     remC--;
                 } else {
                     extraR = false;
                     if (computeRect(x, y, deltaR, deltaC)) { // Compute the larger subgrid
                         g.setColor(gui.currentColor);
-                        g.fillRect(j, i, 1, 1);
-                    } else {
-                        g.setColor(Color.WHITE);
-                        g.fillRect(j, i, 1, 1);
-                    }
+                    } else g.setColor(Color.WHITE);
 
+                    g.fillRect(j, i, 1, 1);
                     y += deltaC;
                 }
             }
+
             // Increment the x range value
-            if (extraR) {
-                x += deltaR + 1;
-            } else {
-                x += deltaR;
-            }
+            x += extraR ? deltaR + 1 : deltaR;
         }
     }
 
-    /**
-     * Loop through the board and see if half or more of the cells in
-     * the mini grid are alive.
-     *
-     * @param x    - the top row
-     * @param y    - the left most column
-     * @param xAdd - the number of rows in the cell
-     * @param yAdd - the number of cols in the cell
-     * @return true if half or more in the bounds are true, false otherwise
-     */
     public boolean computeRect(int x, int y, int xAdd, int yAdd) {
         int total = xAdd * yAdd;
         int aliveCount = 0;
@@ -190,11 +140,6 @@ public class Board extends JPanel {
         return aliveCount >= total / 2;
     }
 
-    /**
-     * Override for paintComponent()
-     *
-     * @param g - Graphics object for painting
-     */
     @Override
     protected void paintComponent(Graphics g) {
         paintBoard(g);

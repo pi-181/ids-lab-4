@@ -1,18 +1,11 @@
 package com.demkom58.ids_lab_4.gui;
 
-import com.demkom58.ids_lab_4.GoTo;
-
 import javax.swing.*;
 import java.awt.*;
 
 public class ToolBar extends JPanel {
     private final JButton goToTick;
 
-    /**
-     * Create two buttons to jump ticks and edit configurations
-     *
-     * @param gui - a reference to the GUI object
-     */
     public ToolBar(GUI gui) {
         setLayout(new FlowLayout());
         this.goToTick = new JButton("Go To");
@@ -31,8 +24,7 @@ public class ToolBar extends JPanel {
                 JOptionPane.showMessageDialog(null, "Invalid input entered: must be int in range [0, 200]");
             else if (tick == -2)
                 return;
-            else
-                gui.processAndLoadTick(tick);
+            else gui.processAndLoadTick(tick);
         });
 
 

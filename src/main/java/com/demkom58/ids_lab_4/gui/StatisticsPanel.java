@@ -1,4 +1,4 @@
-package com.demkom58.ids_lab_4.tools;
+package com.demkom58.ids_lab_4.gui;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,16 +16,6 @@ public class StatisticsPanel extends JPanel {
     private final JLabel diffDead;
     private final JLabel tickLabel;
 
-    /**
-     * The constructor for StatisticsPanel takes in the number of
-     * alive and dead cells to start the game. It constructs two
-     * JPanel objects to hold the num alive/dead stats for the
-     * current tick and the difference between the previous. It also
-     * creates a JLabel to hold the tick count.
-     *
-     * @param numAlive - the number of alive cells
-     * @param numDead  - the number of dead cells
-     */
     public StatisticsPanel(int numAlive, int numDead) {
         this.tick = 0;
         this.numAlive = numAlive;
@@ -51,23 +41,10 @@ public class StatisticsPanel extends JPanel {
         display();
     }
 
-    /**
-     * Accessor method for the current tick of the game.
-     *
-     * @return an int that represents current tick of the game
-     */
     public int getTick() {
         return this.tick;
     }
 
-    /**
-     * This method takes in the number of alive and dead cells
-     * in the next round and updates the game statistics.
-     *
-     * @param newNumAlive - the number of alive cells in new round
-     * @param newNumDead  - the number of dead cells in the new round
-     * @param newTick     - the next tick in the game / next tick selected by user
-     */
     public void update(int newNumAlive, int newNumDead, int newTick) {
         diffNumAlive = newNumAlive - numAlive;
         diffNumDead = newNumDead - numDead;
@@ -77,11 +54,6 @@ public class StatisticsPanel extends JPanel {
         display();
     }
 
-    /**
-     * This method increments or decrements the current tick.
-     *
-     * @param increaseTick - a boolean value, if true increment, else decrement
-     */
     public void updateTick(boolean increaseTick) {
         if (increaseTick)
             tick++;
@@ -89,12 +61,6 @@ public class StatisticsPanel extends JPanel {
             tick--;
     }
 
-    /**
-     * This method displays the current tick, the amount of cells that
-     * are alive and dead in the current tick, as well as the difference
-     * in the amount of cells that are dead and alive compared to the
-     * previous tick.
-     */
     private void display() {
 
         // Display the current tick of the game

@@ -1,28 +1,15 @@
 package com.demkom58.ids_lab_4;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Scanner;
-
 public class GameOfLife {
-
     public byte[][] initialBoard;
-    protected int numRows;
-    protected int numCols;
+    public int numRows;
+    public int numCols;
     private GridThread[] pool;
     private int numThreads;
     private byte[][] grid;
     private byte[][] nextGrid;
     private final byte[][] tempGrid;
 
-    /**
-     * Construct a 2D grid with a number of rows and columns
-     *
-     * @param numRows    - the number of rows in the grid
-     * @param numCols    - the number of columns in the grid
-     * @param numThreads - the number of threads for computation
-     */
     public GameOfLife(int numRows, int numCols, int numThreads) {
         this.grid = new byte[numRows][numCols];
         this.initialBoard = new byte[numRows][numCols];
@@ -33,21 +20,14 @@ public class GameOfLife {
         this.numThreads = numThreads;
     }
 
+    public int getNumThreads() {
+        return numThreads;
+    }
 
-    /**
-     * Sets the number of threads for computing
-     *
-     * @param numThreads - the new number of threads
-     */
     public void setThreadNumber(int numThreads) {
         this.numThreads = numThreads;
     }
 
-
-    /**
-     * This constructor creates the designated number of threads and assigns them
-     * proper indeces for computing.
-     */
     public void configureThreads() {
         this.pool = new GridThread[this.numThreads];
         int rRem = 0;
@@ -57,15 +37,13 @@ public class GameOfLife {
         int rThreads = this.numThreads / 2;
         int rRangeMod = this.numRows % rThreads;
         int rRange = this.numRows / rThreads;
-        if (rRangeMod != 0) {
+        if (rRangeMod != 0)
             rRem = this.numRows % rRange;
-        }
 
         // Check to see if a chunk of processors should have a larger col block
         int cRange = this.numCols / 2;
-        if (this.numCols % 2 != 0) {
+        if (this.numCols % 2 != 0)
             cRem = 1;
-        }
 
         // Create the threads array and add the proper coordinates for each
         int r = 0;
@@ -80,15 +58,6 @@ public class GameOfLife {
         this.pool[cnt++] = new GridThread(this, this.grid, this.nextGrid, r, cRange, r + rRange - 1, cRange * 2 + cRem - 1);
     }
 
-
-    /**
-     * This method loads in a new grid and replaces the current
-     * one with the new one. It exits the program if an invalid
-     * grid is supplied. Only call when sure that newGrid has same
-     * dimensions as GameOfLife's current grid.
-     *
-     * @param newGrid - the new 2D grid of ints replacing the existing one
-     */
     public void replaceGrid(byte[][] newGrid) {
         try {
             for (int r = 0; r < numRows; r++) {
@@ -103,54 +72,16 @@ public class GameOfLife {
         }
     }
 
-
-    /**
-     * This method returns the GameOfLife grid as 1s and 0s.
-     * It makes a copy to avoid representation exposure.
-     *
-     * @return a 2D array of ints
-     */
     public byte[][] getGrid() {
         byte[][] retGrid = new byte[numRows][numCols];
-        for (int r = 0; r < numRows; r++) {
-            for (int c = 0; c < numCols; c++) {
+
+        for (int r = 0; r < numRows; r++)
+            for (int c = 0; c < numCols; c++)
                 retGrid[r][c] = this.grid[r][c];
-            }
-        }
+
         return retGrid;
     }
 
-
-    /**
-     * This method takes in a Scanner object which then reads in the
-     * states of the Cells in the game from a text file. It adds the state
-     * of the cell to the game grid.
-     *
-     * @param sc - a Scanner object reading from a text file
-     */
-    public void populate(Scanner sc) {
-        for (int r = 0; r < numRows; r++) {
-            for (int c = 0; c < numCols; c++) {
-                char digit = sc.next().charAt(0);
-                if (digit == '0')
-                    grid[r][c] = 0;
-                else if (digit == '1')
-                    grid[r][c] = 1;
-            }
-        }
-    }
-
-
-    /**
-     * This method takes in the position of a Cell
-     * and computes the number of neighbors only if
-     * that Cell is a corner Cell. It returns -1 if
-     * that Cell is not a corner Cell.
-     *
-     * @param r - the row number in the grid
-     * @param c - the column number in the grid
-     * @return the number of alive neighbors of a corner Cell
-     */
     private int calculateCorner(int r, int c) {
         int topBound = r;
         int bottomBound = r;
@@ -160,7 +91,7 @@ public class GameOfLife {
         int m = numCols - 1;
         int numNeighbors = 0;
 
-        if (r == 0 && c == 0) {        // top left corner
+        if (r == 0 && c == 0) { // top left corner
             bottomBound++;
             rightBound++;
             numNeighbors += grid[n][m];
@@ -184,11 +115,8 @@ public class GameOfLife {
             numNeighbors += grid[0][0];
             numNeighbors += grid[0][m] + grid[0][m - 1];
             numNeighbors += grid[n][0] + grid[n - 1][0];
-        } else {
-            return -1; // Not a corner
-        }
+        } else return -1; // Not a corner
 
-        // Add up not wrapped Cell states
         for (int i = topBound; i <= bottomBound; i++) {
             for (int j = leftBound; j <= rightBound; j++) {
                 if (!(i == r && j == c)) {
@@ -199,15 +127,6 @@ public class GameOfLife {
         return numNeighbors;
     }
 
-
-    /**
-     * This method takes in a location in the grid and returns
-     * the state of that Cell in the next tick of the game.
-     *
-     * @param r - the row location
-     * @param c - the column location
-     * @return the new state of the Cell after the tick
-     */
     public byte checkState(int r, int c) {
         boolean isAlive = (this.grid[r][c] == 1);
         int numNeighbors = getNumberOfNeighbors(r, c);
@@ -224,20 +143,12 @@ public class GameOfLife {
         }
     }
 
-
-    /**
-     * This method takes in the location of a Cell and it
-     * returns the number of neighbors which that Cell has.
-     *
-     * @param r - the row location
-     * @param c - the column location
-     * @return the number of live neighbors of the Cell at (r, c)
-     */
     private int getNumberOfNeighbors(int r, int c) {
-        Boolean leftEdge = (c == 0);
-        Boolean rightEdge = (c == numCols - 1);
-        Boolean topEdge = (r == 0);
-        Boolean bottomEdge = (r == numRows - 1);
+        boolean leftEdge = (c == 0);
+        boolean rightEdge = (c == numCols - 1);
+        boolean topEdge = (r == 0);
+        boolean bottomEdge = (r == numRows - 1);
+
         int topBound = r - 1;
         int bottomBound = r + 1;
         int leftBound = c - 1;
@@ -258,9 +169,8 @@ public class GameOfLife {
 
         // Return the amount of neighbors for a corner cell
         int cornerResult = calculateCorner(r, c);
-        if (cornerResult != -1) {
+        if (cornerResult != -1)
             return cornerResult;
-        }
 
         // Cell is not on the corner nor in the middle.
         // Access the Cell's that are wrapped and get the proper bounds.
@@ -301,34 +211,23 @@ public class GameOfLife {
         return numNeighbors;
     }
 
-
-    /**
-     * This method takes in the number of steps to run the GameOfLife
-     * for. It creates an array with the new states of the Cell's
-     * after the current round of the game. It then updates the grid
-     * with the values and writes it to a text file.
-     *
-     * @param stepCount - the number of steps to run the game for
-     */
     public void play(int stepCount) {
-
         // If multithreaded, handle the threads
         if (this.numThreads > 1) {
+            System.out.println(numThreads + " threads handle...");
             for (int i = 0; i < stepCount; i++) {
                 configureThreads();
-
                 // Start all of the threads for computation
-                for (int t = 0; t < this.numThreads; t++) {
+                for (int t = 0; t < this.numThreads; t++)
                     this.pool[t].start();
-                }
             }
             return;
         }
 
+        System.out.println("Single thread handle...");
         // If single threaded
         int numCells = numRows * numCols;
         for (int i = 0; i < stepCount; i++) {
-
             // Check the state of every cell in the grid
             int j = 0;
             byte[] newGrid = new byte[numCells];
@@ -357,63 +256,20 @@ public class GameOfLife {
         }
     }
 
-
-    /**
-     * Returns whether the cell at a certain location is alive
-     *
-     * @param r - the row to check
-     * @param c - the col to check
-     * @return true if the cell is alive, false otherwise
-     */
     public boolean isAlive(int r, int c) {
         return this.grid[r][c] == 1;
     }
 
-
-    /**
-     * Wait for all of the threads to complete before continuing
-     */
     public void joinThreads() {
-        if (this.numThreads == 1) {
+        if (this.numThreads == 1)
             return;
-        }
+
         try {
-            for (GridThread t : this.pool) {
-                t.join();
-            }
+            for (GridThread t : this.pool) t.join();
             this.grid = this.nextGrid;
             this.nextGrid = this.tempGrid;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
-
-
-    /**
-     * This method loops through the grid and outputs the result.
-     * to a text file. It is formatted to look like a grid.
-     *
-     * @param outGrid    - the grid to be printed
-     * @param tick       - the current tick of the game
-     * @param outputFile - the output file to write contents to
-     * @throws IOException - throws IOException if outputting fails
-     */
-    public void print(byte[][] outGrid, int tick, String outputFile) throws IOException {
-        try {
-            outputFile = outputFile + tick + ".txt";
-            BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
-
-            // Print out the entire grid
-            for (int r = 0; r < numRows; r++) {
-                for (int c = 0; c < numCols; c++) {
-                    writer.write(String.format("%d", outGrid[r][c]));
-                }
-                writer.write("\n");
-            }
-            writer.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 }
