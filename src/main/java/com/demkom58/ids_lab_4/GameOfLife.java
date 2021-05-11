@@ -69,51 +69,6 @@ public class GameOfLife {
         return retGrid;
     }
 
-    private int calculateCorner(int r, int c) {
-        int topBound = r;
-        int bottomBound = r;
-        int leftBound = c;
-        int rightBound = c;
-        int n = numRows - 1;
-        int m = numCols - 1;
-        int numNeighbors = 0;
-
-        if (r == 0 && c == 0) { // top left corner
-            bottomBound++;
-            rightBound++;
-            numNeighbors += grid[n][m];
-            numNeighbors += grid[0][m] + grid[1][m];
-            numNeighbors += grid[n][0] + grid[n][1];
-        } else if (r == 0 && c == m) { // top right corner
-            bottomBound++;
-            leftBound--;
-            numNeighbors += grid[n][0];
-            numNeighbors += grid[0][0] + grid[1][0];
-            numNeighbors += grid[n][m] + grid[n][m - 1];
-        } else if (r == n && c == 0) { // bottom left corner
-            topBound--;
-            rightBound++;
-            numNeighbors += grid[0][m];
-            numNeighbors += grid[0][0] + grid[0][1];
-            numNeighbors += grid[n][m] + grid[n - 1][m];
-        } else if (r == n && c == m) { // bottom right corner
-            topBound--;
-            leftBound--;
-            numNeighbors += grid[0][0];
-            numNeighbors += grid[0][m] + grid[0][m - 1];
-            numNeighbors += grid[n][0] + grid[n - 1][0];
-        } else return -1; // Not a corner
-
-        for (int i = topBound; i <= bottomBound; i++) {
-            for (int j = leftBound; j <= rightBound; j++) {
-                if (!(i == r && j == c)) {
-                    numNeighbors += grid[i][j];
-                }
-            }
-        }
-        return numNeighbors;
-    }
-
     public byte checkState(int r, int c) {
         boolean isAlive = (this.grid[r][c] == 1);
         int numNeighbors = getNumberOfNeighbors(r, c);
@@ -136,74 +91,28 @@ public class GameOfLife {
         boolean topEdge = (r == 0);
         boolean bottomEdge = (r == numRows - 1);
 
-        int topBound = r - 1;
-        int bottomBound = r + 1;
-        int leftBound = c - 1;
-        int rightBound = c + 1;
         int numNeighbors = 0;
-
-        // Check for Cell not on the perimeter
-        if (!topEdge && !bottomEdge && !leftEdge && !rightEdge) {
-            for (int i = topBound; i <= bottomBound; i++) {
-                for (int j = leftBound; j <= rightBound; j++) {
-                    if (!(i == r && j == c)) { // Don't check (r,c) in grid
-                        numNeighbors += this.grid[i][j];
-                    }
-                }
-            }
-            return numNeighbors;
+        if (!bottomEdge) {
+            numNeighbors += this.grid[r+1][c];
+            if (!leftEdge) numNeighbors += this.grid[r+1][c-1];
+            if (!rightEdge) numNeighbors += this.grid[r+1][c+1];
         }
 
-        // Return the amount of neighbors for a corner cell
-        int cornerResult = calculateCorner(r, c);
-        if (cornerResult != -1)
-            return cornerResult;
-
-        // Cell is not on the corner nor in the middle.
-        // Access the Cell's that are wrapped and get the proper bounds.
-        if (topEdge) {
-            topBound = r;
-            bottomBound = r + 1;
-            for (int i = leftBound; i <= rightBound; i++) { // loop across bottom
-                numNeighbors += this.grid[numRows - 1][i];
-            }
-        } else if (bottomEdge) {
-            topBound = r - 1;
-            bottomBound = r;
-            for (int i = leftBound; i <= rightBound; i++) { // loop across top
-                numNeighbors += this.grid[0][i];
-            }
-        } else if (leftEdge) {
-            leftBound = c;
-            rightBound = c + 1;
-            for (int i = topBound; i <= bottomBound; i++) { // loop across right
-                numNeighbors += this.grid[i][numCols - 1];
-            }
-        } else { // rightEdge
-            leftBound = c - 1;
-            rightBound = c;
-            for (int i = topBound; i <= bottomBound; i++) { // loop across left
-                numNeighbors += this.grid[i][0];
-            }
+        if (!topEdge) {
+            numNeighbors += this.grid[r-1][c];
+            if (!leftEdge) numNeighbors += this.grid[r-1][c-1];
+            if (!rightEdge) numNeighbors += this.grid[r-1][c+1];
         }
 
-        // Get the Cell's neighbors which are not wrapped
-        for (int i = topBound; i <= bottomBound; i++) {
-            for (int j = leftBound; j <= rightBound; j++) {
-                if (!(i == r && j == c)) { // Don't check (r,c) in grid
-                    numNeighbors += this.grid[i][j];
-                }
-            }
-        }
+        if (!leftEdge) numNeighbors += this.grid[r][c-1];
+        if (!rightEdge) numNeighbors += this.grid[r][c+1];
+
         return numNeighbors;
     }
 
     public void play(int stepCount) {
-        // If multithreaded, handle the threads
-        System.out.println(numThreads + " threads handle...");
         for (int i = 0; i < stepCount; i++) {
             configureThreads();
-            // Start all of the threads for computation
             for (int t = 0; t < this.numThreads; t++)
                 this.pool[t].start();
         }
