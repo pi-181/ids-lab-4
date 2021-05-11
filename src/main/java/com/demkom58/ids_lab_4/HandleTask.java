@@ -1,6 +1,6 @@
 package com.demkom58.ids_lab_4;
 
-public class GridWorkerThread extends Thread {
+public class HandleTask implements Runnable {
 
     private final GameOfLife game;
     private final byte[][] writeGrid;
@@ -9,8 +9,7 @@ public class GridWorkerThread extends Thread {
     private final int x1;
     private final int y1; // The bottom right coordinate of the mini-grid
 
-    public GridWorkerThread(int id, GameOfLife game, byte[][] writeGrid, int x0, int y0, int x1, int y1) {
-        // super("GridThread-" + id + " (" + x0 + "," + y0 + ") to (" + x1 + "," + y1 + ")");
+    public HandleTask(int id, GameOfLife game, byte[][] writeGrid, int x0, int y0, int x1, int y1) {
         this.game = game;
         this.writeGrid = writeGrid;
         this.x0 = x0;
@@ -18,7 +17,8 @@ public class GridWorkerThread extends Thread {
         this.x1 = x1;
         this.y1 = y1;
 
-        // System.out.println(getName() + " handle chunk from (" + x0 + "," + y0 + ") to (" + x1 + "," + y1 + ")");
+        // System.out.println("GridThread-" + id + " (" + x0 + "," + y0 + ") to (" + x1 + "," + y1 + ")"
+        // + " handle chunk from (" + x0 + "," + y0 + ") to (" + x1 + "," + y1 + ")");
     }
 
     private void compute() {

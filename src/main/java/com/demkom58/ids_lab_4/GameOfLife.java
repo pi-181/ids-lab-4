@@ -1,23 +1,32 @@
 package com.demkom58.ids_lab_4;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 public class GameOfLife {
+    private ExecutorService executorService;
+    private Future<?>[] futureTasks;
+    private HandleTask[] tasks;
+
     public byte[][] initialBoard;
     public int numRows;
     public int numCols;
-    private GridWorkerThread[] pool;
     private int numThreads;
     private byte[][] grid;
     private byte[][] nextGrid;
     private final byte[][] tempGrid;
 
     public GameOfLife(int numRows, int numCols, int numThreads) {
+        setThreadNumber(numThreads);
+
         this.grid = new byte[numRows][numCols];
         this.initialBoard = new byte[numRows][numCols];
         this.nextGrid = new byte[numRows][numCols];
         this.tempGrid = new byte[numRows][numCols];
         this.numRows = numRows;
         this.numCols = numCols;
-        this.numThreads = numThreads;
     }
 
     public int getNumThreads() {
@@ -26,11 +35,12 @@ public class GameOfLife {
 
     public void setThreadNumber(int numThreads) {
         this.numThreads = numThreads;
+        this.executorService = Executors.newFixedThreadPool(numThreads);
+        this.futureTasks = new Future[numThreads];
+        this.tasks = new HandleTask[numThreads];
     }
 
     public void configureThreads() {
-        this.pool = new GridWorkerThread[this.numThreads];
-
         int rRangeMod = this.numRows % numThreads;
         int rRange = this.numRows / numThreads;
 
@@ -41,7 +51,7 @@ public class GameOfLife {
             if (i == numThreads - 1)
                 er += rRangeMod;
 
-            this.pool[i] = new GridWorkerThread(i, this, this.nextGrid, sr, 0, er, numCols - 1);
+            this.tasks[i] = new HandleTask(i, this, this.nextGrid, sr, 0, er, numCols - 1);
         }
     }
 
@@ -114,7 +124,7 @@ public class GameOfLife {
         for (int i = 0; i < stepCount; i++) {
             configureThreads();
             for (int t = 0; t < this.numThreads; t++)
-                this.pool[t].start();
+                futureTasks[t] = executorService.submit(this.tasks[t]);
         }
     }
 
@@ -124,10 +134,10 @@ public class GameOfLife {
 
     public void joinThreads() {
         try {
-            for (GridWorkerThread t : this.pool) t.join();
+            for (Future<?> t : this.futureTasks) t.get();
             this.grid = this.nextGrid;
             this.nextGrid = this.tempGrid;
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
     }
