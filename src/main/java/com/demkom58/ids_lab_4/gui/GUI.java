@@ -62,7 +62,7 @@ public class GUI {
         });
 
         // Add tick control buttons to go forward
-        TickControl tickControl = new TickControl(Color.GREEN);
+        TickControl tickControl = new TickControl(Color.ORANGE);
         GameMenuBar menu = new GameMenuBar();
         ToolBar toolBar = new ToolBar(this);
         toolBar.add(colorSelector);
@@ -92,19 +92,18 @@ public class GUI {
 
     public void updateAndShowGUI(byte[][] newGrid, int newTick) {
         if (newTick == statsPanel.getTick() && newTick > 0) return;
+
         // Update the new colors of the cells and keep track of dead/alive count
         int numAlive = 0;
         int numDead = 0;
+
         for (int r = 0; r < rowCount; r++) {
             for (int c = 0; c < colCount; c++) {
-                int newState = newGrid[r][c];
-                if (newState == 1) { // Birth it
-                    numAlive++;
-                } else { // Kill it
-                    numDead++;
-                }
+                if (newGrid[r][c] == 1) numAlive++;
+                else numDead++;
             }
         }
+
         // Update the current grid with a new one and update stats
         this.statsPanel.update(numAlive, numDead, newTick);
         this.frame.revalidate();
@@ -151,9 +150,8 @@ public class GUI {
         this.game.replaceGrid(copyGrid);
         this.game.play(1);
         this.game.joinThreads();
-        if (display) {
-            this.updateAndShowGUI(this.game.getGrid(), nextTick);
-        }
+
+        if (display) this.updateAndShowGUI(this.game.getGrid(), nextTick);
     }
 
     protected void processAndLoadTick(int tick) {
@@ -172,9 +170,11 @@ public class GUI {
             }
 
             nextTick(true);
-            double elapsedTime = ((double) (System.currentTimeMillis() - startTime)) / 1000.0;
-            JOptionPane.showMessageDialog(null, "Done for " + elapsedTime + "ms, using " + game.getNumThreads() + " threads.");
-            System.out.println("TIME: " + elapsedTime);
+            final double elapsedTime = ((double) (System.currentTimeMillis() - startTime)) / 1000.0;
+            JOptionPane.showMessageDialog(null,
+                    "Done for " + elapsedTime + "ms, using " + game.getNumThreads() + " threads.\n" +
+                    "Matrix " + game.numRows + "x" + game.numCols + " and " + tick + " ticks."
+            );
         } else if (tick < currentTick) {
             JOptionPane.showMessageDialog(null, "Cannot go backwards, please load or generate a grid.");
         }
@@ -235,7 +235,7 @@ public class GUI {
 
         public TickControl(Color nextColor) {
             this.setLayout(new FlowLayout());
-            this.next = new JButton("Next");
+            this.next = new JButton("Play Tick");
             this.next.setBackground(nextColor);
             next.addActionListener(e -> nextTick(true));
             add(next);

@@ -4,7 +4,7 @@ public class GameOfLife {
     public byte[][] initialBoard;
     public int numRows;
     public int numCols;
-    private GridThread[] pool;
+    private GridWorkerThread[] pool;
     private int numThreads;
     private byte[][] grid;
     private byte[][] nextGrid;
@@ -29,33 +29,20 @@ public class GameOfLife {
     }
 
     public void configureThreads() {
-        this.pool = new GridThread[this.numThreads];
-        int rRem = 0;
-        int cRem = 0;
+        this.pool = new GridWorkerThread[this.numThreads];
 
-        // Check to see if a chunk of processors should have a larger row block
-        int rThreads = this.numThreads / 2;
-        int rRangeMod = this.numRows % rThreads;
-        int rRange = this.numRows / rThreads;
-        if (rRangeMod != 0)
-            rRem = this.numRows % rRange;
+        int rRangeMod = this.numRows % numThreads;
+        int rRange = this.numRows / numThreads;
 
-        // Check to see if a chunk of processors should have a larger col block
-        int cRange = this.numCols / 2;
-        if (this.numCols % 2 != 0)
-            cRem = 1;
+        for (int i = 0; i < numThreads; i++) {
+            final int sr = i * rRange;
+            int er = (i + 1) * rRange - 1;
 
-        // Create the threads array and add the proper coordinates for each
-        int r = 0;
-        int cnt = 0;
-        for (int i = 0; i < rThreads - 1; i++, r += rRange) {
-            // Create the left and the right thread block for the current row
-            this.pool[cnt++] = new GridThread(this, this.grid, this.nextGrid, r, 0, r + rRange - 1, cRange - 1);
-            this.pool[cnt++] = new GridThread(this, this.grid, this.nextGrid, r, cRange, r + rRange - 1, cRange * 2 + cRem - 1);
+            if (i == numThreads - 1)
+                er += rRangeMod;
+
+            this.pool[i] = new GridWorkerThread(i, this, this.nextGrid, sr, 0, er, numCols - 1);
         }
-        // Create the bottom left and the bottom right threads
-        this.pool[cnt++] = new GridThread(this, this.grid, this.nextGrid, r, 0, r + rRange - 1, cRange - 1);
-        this.pool[cnt++] = new GridThread(this, this.grid, this.nextGrid, r, cRange, r + rRange - 1, cRange * 2 + cRem - 1);
     }
 
     public void replaceGrid(byte[][] newGrid) {
@@ -213,46 +200,12 @@ public class GameOfLife {
 
     public void play(int stepCount) {
         // If multithreaded, handle the threads
-        if (this.numThreads > 1) {
-            System.out.println(numThreads + " threads handle...");
-            for (int i = 0; i < stepCount; i++) {
-                configureThreads();
-                // Start all of the threads for computation
-                for (int t = 0; t < this.numThreads; t++)
-                    this.pool[t].start();
-            }
-            return;
-        }
-
-        System.out.println("Single thread handle...");
-        // If single threaded
-        int numCells = numRows * numCols;
+        System.out.println(numThreads + " threads handle...");
         for (int i = 0; i < stepCount; i++) {
-            // Check the state of every cell in the grid
-            int j = 0;
-            byte[] newGrid = new byte[numCells];
-            for (int r = 0; r < numRows; r++) {
-                for (int c = 0; c < numCols; c++) {
-                    newGrid[j] = checkState(r, c);
-                    j++;
-                }
-            }
-
-            // Update this grid with new states of the Cells
-            int rIndex = 0;
-            int cIndex = 0;
-            for (int c = 0; c < numCells; c++) {
-                if (newGrid[c] == 1) {
-                    grid[rIndex][cIndex] = 1;
-                } else {
-                    grid[rIndex][cIndex] = 0;
-                }
-                cIndex++;
-                if ((c + 1) % numCols == 0) {
-                    rIndex++;
-                    cIndex = 0;
-                }
-            }
+            configureThreads();
+            // Start all of the threads for computation
+            for (int t = 0; t < this.numThreads; t++)
+                this.pool[t].start();
         }
     }
 
@@ -261,11 +214,8 @@ public class GameOfLife {
     }
 
     public void joinThreads() {
-        if (this.numThreads == 1)
-            return;
-
         try {
-            for (GridThread t : this.pool) t.join();
+            for (GridWorkerThread t : this.pool) t.join();
             this.grid = this.nextGrid;
             this.nextGrid = this.tempGrid;
         } catch (InterruptedException e) {

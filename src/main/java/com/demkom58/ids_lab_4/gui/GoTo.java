@@ -16,7 +16,7 @@ public class GoTo extends JPanel {
         labelFieldMap.put(message, textField);
         add(textField);
 
-        setBorder(BorderFactory.createTitledBorder("Enter a tick from 0 to 200"));
+        setBorder(BorderFactory.createTitledBorder("Enter a ticks count"));
     }
 
     public int getTick(String labelText) {
@@ -26,7 +26,7 @@ public class GoTo extends JPanel {
 
         try {
             final int returnValue = Integer.parseInt(textField.getText());
-            return returnValue < 0 || returnValue > 200 ? -1 : returnValue;
+            return returnValue <= 0 ? -1 : returnValue;
         } catch (Exception e) {
             return -1;
         }

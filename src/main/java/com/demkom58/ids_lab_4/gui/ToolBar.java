@@ -21,7 +21,7 @@ public class ToolBar extends JPanel {
             if (reply == -1 || reply == 1) return;
             int tick = tickSelector.getTick("What tick do you want to go to?  ");
             if (tick == -1)
-                JOptionPane.showMessageDialog(null, "Invalid input entered: must be int in range [0, 200]");
+                JOptionPane.showMessageDialog(null, "Invalid input entered: must be int larger than zero");
             else if (tick == -2)
                 return;
             else gui.processAndLoadTick(tick);

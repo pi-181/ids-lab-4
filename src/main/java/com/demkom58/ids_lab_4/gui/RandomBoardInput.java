@@ -47,15 +47,14 @@ public class RandomBoardInput extends JPanel {
         try {
             this.numRows = Integer.parseInt(rows);
             this.numCols = Integer.parseInt(cols);
+            this.seed = Integer.parseInt(seed);
+
             if (this.numRows < 3 || this.numCols < 3) {
                 JOptionPane.showMessageDialog(null, "Both the row and column count must be larger than 3");
                 return -1;
-            } else if (this.numRows > 0 && this.numCols > 0) {
-                return 0;
             }
 
-            this.seed = Integer.parseInt(seed);
-            return -1;
+            return 0;
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Invalid input entered");
             return -1;

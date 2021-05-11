@@ -40,9 +40,6 @@ public class ThreadCountInput extends JPanel {
             } else if (r < 3 || c < 3) {
                 JOptionPane.showMessageDialog(null, "Please load in a grid first");
                 return -1;
-            } else if (cnt % 2 == 1) {
-                JOptionPane.showMessageDialog(null, "Enter an even number of threads please");
-                return -1;
             } else if (r * c < cnt && r < 100 && c < 100) {
                 JOptionPane.showMessageDialog(null, "There is no point of having more threads than there are cells");
                 return -1;
