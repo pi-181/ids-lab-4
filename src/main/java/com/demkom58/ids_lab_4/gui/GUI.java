@@ -180,13 +180,13 @@ public class GUI {
         }
     }
 
-    public byte[][] generateRandomGrid(int r, int c, int seed) {
+    public byte[][] generateRandomGrid(int r, int c, int seed, double threshold) {
         final Random random = new Random(seed);
 
         byte[][] newGrid = new byte[r][c];
         for (int i = 0; i < r; i++)
             for (int j = 0; j < c; j++)
-                newGrid[i][j] = (byte) (random.nextDouble() > 0.5 ? 1 : 0);
+                newGrid[i][j] = (byte) (random.nextDouble() > threshold ? 1 : 0);
 
         return newGrid;
     }
@@ -217,7 +217,7 @@ public class GUI {
                 if (rc == -1)
                     return;
 
-                byte[][] newGrid = generateRandomGrid(gui.rowCount, gui.colCount, boardInput.getSeed());
+                byte[][] newGrid = generateRandomGrid(gui.rowCount, gui.colCount, boardInput.getSeed(), boardInput.getThreshold());
                 gui.game = new GameOfLife(gui.rowCount, gui.colCount, gui.threadCount);
                 gui.game.replaceGrid(newGrid);
                 configureNewGrid(newGrid);
