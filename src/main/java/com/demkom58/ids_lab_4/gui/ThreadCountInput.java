@@ -43,6 +43,9 @@ public class ThreadCountInput extends JPanel {
             } else if (r * c < cnt && r < 100 && c < 100) {
                 JOptionPane.showMessageDialog(null, "There is no point of having more threads than there are cells");
                 return -1;
+            } else if (r < cnt) {
+                JOptionPane.showMessageDialog(null, "Threads can't be more than rows");
+                return -1;
             }
 
             this.numThreads = cnt;
